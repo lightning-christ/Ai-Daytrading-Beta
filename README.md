@@ -1,1 +1,1 @@
-# Some-tensorflow-stuff
+# Ai daytrading Beta
