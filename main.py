@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Dropout
 from sklearn.preprocessing import MinMaxScaler
@@ -11,10 +10,12 @@ data = pd.read_csv('historical_prices.csv')
 data['Date'] = pd.to_datetime(data['Date'])
 data = data.sort_values('Date')
 
+# Normalize prices
 prices = data['Close'].values
 scaler = MinMaxScaler(feature_range=(0, 1))
 scaled_prices = scaler.fit_transform(prices.reshape(-1, 1))
 
+# Create dataset
 def create_dataset(data, time_step=1):
     X, y = [], []
     for i in range(len(data) - time_step - 1):
@@ -27,15 +28,17 @@ time_step = 60
 X, y = create_dataset(scaled_prices, time_step)
 X = X.reshape(X.shape[0], X.shape[1], 1)
 
+# Split dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=False)
 
 # Define the model
-model = Sequential()
-model.add(LSTM(50, return_sequences=True, input_shape=(time_step, 1)))
-model.add(Dropout(0.2))
-model.add(LSTM(50, return_sequences=False))
-model.add(Dropout(0.2))
-model.add(Dense(1))
+model = Sequential([
+    LSTM(50, return_sequences=True, input_shape=(time_step, 1)),
+    Dropout(0.2),
+    LSTM(50, return_sequences=False),
+    Dropout(0.2),
+    Dense(1)
+])
 
 # Compile the model
 model.compile(optimizer='adam', loss='mean_squared_error')
